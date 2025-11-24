@@ -32,7 +32,7 @@ jobs:
       - name: Build VSTO Add-in
         shell: cmd
         run: |
-          msbuild YourVstoSolution.sln ^
+          msbuild DavigoldExcel.sln ^
             /p:Configuration=Release ^
             /p:Platform="Any CPU" ^
             /verbosity:minimal
