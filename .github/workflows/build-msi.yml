@@ -33,6 +33,7 @@ jobs:
         id: msbuild
         shell: powershell
         run: |
+          Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
           $msbuildPath = $null
           # Try vswhere first
           $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -98,9 +99,9 @@ jobs:
 
       # 7. Upload MSI to your endpoint
       - name: Upload MSI to localhost API
-        shell: powershell
+        shell: cmd
         run: |
-          curl.exe -X POST `
-            -F "file=@Setup-${{ steps.gitversion.outputs.FullSemVer }}.msi" `
-            -F "version=${{ steps.gitversion.outputs.FullSemVer }}" `
+          curl.exe -X POST ^
+            -F "file=@Setup-${{ steps.gitversion.outputs.FullSemVer }}.msi" ^
+            -F "version=${{ steps.gitversion.outputs.FullSemVer }}" ^
             https://localhost:7106/api/plugin-version
