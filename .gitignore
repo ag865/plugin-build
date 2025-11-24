@@ -1,0 +1,16 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/DavigoldExcel/obj
+/DavigoldExcel/bin
+
+/DavigoldPowerpointAddin/obj
+/DavigoldPowerpointAddin/bin
+
+/DavigoldWordAddin/obj
+/DavigoldWordAddin/bin
+
+DavigoldAddinInstaller/Debug
+
+.vs

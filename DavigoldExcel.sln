@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34723.18
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DavigoldExcel", "DavigoldExcel\DavigoldExcel.csproj", "{3475D452-AFF2-44D3-89D3-FC9A4CA9981C}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "DavigoldAddinInstaller", "DavigoldAddinInstaller\DavigoldAddinInstaller.vdproj", "{254863FD-FA46-4227-B197-24CB8C09CAB2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DavigoldPowerpoint", "DavigoldPowerpointAddin\DavigoldPowerpoint.csproj", "{372F3CD8-B079-4D5D-B00C-DA9E08B5B7DE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DavigoldWordAddin", "DavigoldWordAddin\DavigoldWordAddin.csproj", "{3679DD14-09BD-413B-B47E-E807D1CE7FDE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3475D452-AFF2-44D3-89D3-FC9A4CA9981C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3475D452-AFF2-44D3-89D3-FC9A4CA9981C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3475D452-AFF2-44D3-89D3-FC9A4CA9981C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3475D452-AFF2-44D3-89D3-FC9A4CA9981C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{254863FD-FA46-4227-B197-24CB8C09CAB2}.Debug|Any CPU.ActiveCfg = Debug
+		{254863FD-FA46-4227-B197-24CB8C09CAB2}.Release|Any CPU.ActiveCfg = Release
+		{372F3CD8-B079-4D5D-B00C-DA9E08B5B7DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{372F3CD8-B079-4D5D-B00C-DA9E08B5B7DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{372F3CD8-B079-4D5D-B00C-DA9E08B5B7DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{372F3CD8-B079-4D5D-B00C-DA9E08B5B7DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3679DD14-09BD-413B-B47E-E807D1CE7FDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3679DD14-09BD-413B-B47E-E807D1CE7FDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3679DD14-09BD-413B-B47E-E807D1CE7FDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3679DD14-09BD-413B-B47E-E807D1CE7FDE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C425B666-63AD-461D-B139-FCDDDE59E5FA}
+	EndGlobalSection
+EndGlobal
