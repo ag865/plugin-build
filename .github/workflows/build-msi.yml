@@ -28,23 +28,59 @@ jobs:
         id: gitversion
         uses: gittools/actions/gitversion/execute@v1
 
-      # 3. Build VSTO Solution (MSBuild must exist on runner)
+      # 3. Find MSBuild
+      - name: Find MSBuild
+        id: msbuild
+        shell: powershell
+        run: |
+          $msbuildPath = $null
+          # Try vswhere first
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          if (Test-Path $vswhere) {
+            $msbuildPath = & $vswhere -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe | Select-Object -First 1
+          }
+          # Fallback to common paths
+          if (-not $msbuildPath) {
+            $paths = @(
+              "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe",
+              "${env:ProgramFiles}\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe",
+              "${env:ProgramFiles}\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe",
+              "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe",
+              "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\MSBuild.exe",
+              "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe",
+              "${env:ProgramFiles(x86)}\MSBuild\14.0\Bin\MSBuild.exe"
+            )
+            foreach ($path in $paths) {
+              if (Test-Path $path) {
+                $msbuildPath = $path
+                break
+              }
+            }
+          }
+          if (-not $msbuildPath) {
+            Write-Error "MSBuild not found. Please install Visual Studio with MSBuild."
+            exit 1
+          }
+          Write-Host "Found MSBuild at: $msbuildPath"
+          echo "path=$msbuildPath" >> $env:GITHUB_OUTPUT
+
+      # 4. Build VSTO Solution (MSBuild must exist on runner)
       - name: Build VSTO Add-in
         shell: cmd
         run: |
-          msbuild DavigoldExcel.sln ^
+          "%{{ steps.msbuild.outputs.path }}" DavigoldExcel.sln ^
             /p:Configuration=Release ^
             /p:Platform="Any CPU" ^
             /verbosity:minimal
 
-      # 4. Build MSI (WiX must exist on runner)
+      # 5. Build MSI (WiX must exist on runner)
       - name: Build MSI using WiX
         shell: cmd
         run: |
           candle.exe installer.wxs -dVersion=${{ steps.gitversion.outputs.FullSemVer }}
           light.exe installer.wixobj -o Setup-${{ steps.gitversion.outputs.FullSemVer }}.msi
 
-      # 5. (Optional) Sign MSI
+      # 6. (Optional) Sign MSI
       - name: Sign MSI (optional)
         if: env.SIGN_PFX_PATH != '' && env.SIGN_PFX_PASSWORD != ''
         shell: cmd
@@ -60,7 +96,7 @@ jobs:
           SIGN_PFX_PATH: ${{ secrets.SIGN_PFX_PATH }}
           SIGN_PFX_PASSWORD: ${{ secrets.SIGN_PFX_PASSWORD }}
 
-      # 6. Upload MSI to your endpoint
+      # 7. Upload MSI to your endpoint
       - name: Upload MSI to localhost API
         shell: powershell
         run: |
