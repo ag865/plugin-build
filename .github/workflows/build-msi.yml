@@ -32,7 +32,13 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      # 4. Build VSTO Solution
+      # 4. Install WiX Toolset
+      - name: Install WiX Toolset
+        run: |
+          iwr -useb https://wixtoolset.org/releases/v3.11.2/wix311.exe -outfile wix.exe
+          ./wix.exe /quiet
+
+      # 5. Build VSTO Solution
       - name: Build VSTO Add-in
         shell: cmd
         run: |
@@ -41,14 +47,14 @@ jobs:
             /p:Platform="Any CPU" ^
             /verbosity:minimal
 
-      # 5. Build MSI using WiX (WiX 3.14.0.8606 is pre-installed on windows-latest)
+      # 6. Build MSI using WiX
       - name: Build MSI using WiX
         shell: cmd
         run: |
           candle.exe installer.wxs -dVersion=${{ steps.gitversion.outputs.FullSemVer }}
           light.exe installer.wixobj -o Setup-${{ steps.gitversion.outputs.FullSemVer }}.msi
 
-      # 6. (Optional) Sign MSI
+      # 7. (Optional) Sign MSI
       - name: Sign MSI (optional)
         if: env.SIGN_PFX_PATH != '' && env.SIGN_PFX_PASSWORD != ''
         shell: cmd
@@ -64,7 +70,7 @@ jobs:
           SIGN_PFX_PATH: ${{ secrets.SIGN_PFX_PATH }}
           SIGN_PFX_PASSWORD: ${{ secrets.SIGN_PFX_PASSWORD }}
 
-      # 7. Upload MSI to your endpoint
+      # 8. Upload MSI to your endpoint
       - name: Upload MSI to localhost API
         shell: cmd
         run: |
