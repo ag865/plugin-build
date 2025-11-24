@@ -11,11 +11,6 @@ jobs:
     runs-on: self-hosted  # your local Windows runner
 
     steps:
-      # 0. Set PowerShell execution policy
-      - name: Set PowerShell execution policy
-        shell: powershell
-        run: |
-          Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
 
       # 1. Checkout code
       - name: Checkout repository
