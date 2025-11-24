@@ -1,0 +1,66 @@
+name: Build VSTO MSI
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    name: Build MSI on Self-Hosted Windows Runner
+    runs-on: self-hosted  # your local Windows runner
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Setup GitVersion
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v1
+        with:
+          versionSpec: '5.x'
+
+      - name: Determine Version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v1
+
+      - name: Show calculated version
+        run: echo "Version = ${{ steps.gitversion.outputs.FullSemVer }}"
+
+      # 3. Build VSTO Solution (MSBuild must exist on runner)
+      - name: Build VSTO Add-in
+        run: |
+          msbuild YourVstoSolution.sln ^
+            /p:Configuration=Release ^
+            /p:Platform="Any CPU" ^
+            /verbosity:minimal
+
+      # 4. Build MSI (WiX must exist on runner)
+      - name: Build MSI using WiX
+        run: |
+          candle.exe installer.wxs -dVersion=${{ steps.gitversion.outputs.FullSemVer }}
+          light.exe installer.wixobj -o Setup-${{ steps.gitversion.outputs.FullSemVer }}.msi
+
+      # 5. (Optional) Sign MSI
+      - name: Sign MSI (optional)
+        if: env.SIGN_PFX_PATH != '' && env.SIGN_PFX_PASSWORD != ''
+        run: |
+          signtool sign ^
+            /f "%SIGN_PFX_PATH%" ^
+            /p "%SIGN_PFX_PASSWORD%" ^
+            /tr http://timestamp.sectigo.com ^
+            /td sha256 ^
+            /fd sha256 ^
+            Setup-${{ steps.gitversion.outputs.FullSemVer }}.msi
+        env:
+          SIGN_PFX_PATH: ${{ secrets.SIGN_PFX_PATH }}
+          SIGN_PFX_PASSWORD: ${{ secrets.SIGN_PFX_PASSWORD }}
+
+      # 6. Upload MSI to your endpoint
+      - name: Upload MSI to localhost API
+        run: |
+          curl -X POST `
+            -F "file=@Setup-${{ steps.gitversion.outputs.FullSemVer }}.msi" `
+            -F "version=${{ steps.gitversion.outputs.FullSemVer }}" `
+            https://localhost:7106/api/plugin-version

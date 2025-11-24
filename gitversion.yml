@@ -1,0 +1,6 @@
+mode: ContinuousDeployment
+next-version: 1.2.26
+branches:
+  main:
+    regex: ^main$
+    increment: patch
