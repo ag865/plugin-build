@@ -7,8 +7,8 @@ on:
 
 jobs:
   build:
-    name: Build MSI on Self-Hosted Windows Runner
-    runs-on: self-hosted  # your local Windows runner
+    name: Build MSI on Windows Runner
+    runs-on: windows-latest
 
     steps:
 
@@ -28,45 +28,20 @@ jobs:
         id: gitversion
         uses: gittools/actions/gitversion/execute@v1
 
-      # 3. Find MSBuild
-      - name: Find MSBuild
-        id: msbuild
-        shell: cmd
-        run: |
-          set MSBUILD_PATH=
-          REM Try vswhere first
-          if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" (
-            for /f "delims=" %%i in ('"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe') do (
-              set MSBUILD_PATH=%%i
-              goto :found
-            )
-          )
-          REM Fallback to common paths
-          if exist "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe" set MSBUILD_PATH=%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe
-          if exist "%ProgramFiles%\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" set MSBUILD_PATH=%ProgramFiles%\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe
-          if exist "%ProgramFiles%\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" set MSBUILD_PATH=%ProgramFiles%\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe
-          if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe" set MSBUILD_PATH=%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe
-          if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\MSBuild.exe" set MSBUILD_PATH=%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\MSBuild.exe
-          if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe" set MSBUILD_PATH=%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe
-          if exist "%ProgramFiles(x86)%\MSBuild\14.0\Bin\MSBuild.exe" set MSBUILD_PATH=%ProgramFiles(x86)%\MSBuild\14.0\Bin\MSBuild.exe
-          :found
-          if "%MSBUILD_PATH%"=="" (
-            echo MSBuild not found. Please install Visual Studio with MSBuild.
-            exit /b 1
-          )
-          echo Found MSBuild at: %MSBUILD_PATH%
-          echo path=%MSBUILD_PATH% >> %GITHUB_OUTPUT%
+      # 3. Setup MSBuild (available on windows-latest but needs to be added to PATH)
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
 
-      # 4. Build VSTO Solution (MSBuild must exist on runner)
+      # 4. Build VSTO Solution
       - name: Build VSTO Add-in
         shell: cmd
         run: |
-          "%{{ steps.msbuild.outputs.path }}" DavigoldExcel.sln ^
+          msbuild DavigoldExcel.sln ^
             /p:Configuration=Release ^
             /p:Platform="Any CPU" ^
             /verbosity:minimal
 
-      # 5. Build MSI (WiX must exist on runner)
+      # 5. Build MSI using WiX (WiX 3.14.0.8606 is pre-installed on windows-latest)
       - name: Build MSI using WiX
         shell: cmd
         run: |
