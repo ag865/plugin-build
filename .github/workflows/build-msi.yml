@@ -32,14 +32,8 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      # 4. Install WiX Toolset
-      - name: Install WiX Toolset
-        run: |
-          iwr -useb https://wixtoolset.org/releases/v3.11.2/wix311.exe -outfile wix.exe
-          ./wix.exe /quiet
-
-      # 5. Build VSTO Solution
-      - name: Build VSTO Add-in
+      # 4. Build Solution (includes VSTO projects and MSI installer project)
+      - name: Build Solution and MSI
         shell: cmd
         run: |
           msbuild DavigoldExcel.sln ^
@@ -47,14 +41,22 @@ jobs:
             /p:Platform="Any CPU" ^
             /verbosity:minimal
 
-      # 6. Build MSI using WiX
-      - name: Build MSI using WiX
+      # 5. Rename MSI with version from GitVersion
+      - name: Rename MSI with version
         shell: cmd
         run: |
-          candle.exe installer.wxs -dVersion=${{ steps.gitversion.outputs.FullSemVer }}
-          light.exe installer.wixobj -o Setup-${{ steps.gitversion.outputs.FullSemVer }}.msi
+          set MSI_PATH=DavigoldAddinInstaller\Release\DavigoldAddinInstaller.msi
+          set VERSION=${{ steps.gitversion.outputs.FullSemVer }}
+          set NEW_MSI_PATH=DavigoldAddinInstaller\Release\DavigoldAddinInstaller-%VERSION%.msi
+          if exist "%MSI_PATH%" (
+            copy "%MSI_PATH%" "%NEW_MSI_PATH%"
+            echo MSI renamed to: %NEW_MSI_PATH%
+          ) else (
+            echo Error: MSI file not found at: %MSI_PATH%
+            exit /b 1
+          )
 
-      # 7. (Optional) Sign MSI
+      # 6. (Optional) Sign MSI
       - name: Sign MSI (optional)
         if: env.SIGN_PFX_PATH != '' && env.SIGN_PFX_PASSWORD != ''
         shell: cmd
@@ -65,16 +67,16 @@ jobs:
             /tr http://timestamp.sectigo.com ^
             /td sha256 ^
             /fd sha256 ^
-            Setup-${{ steps.gitversion.outputs.FullSemVer }}.msi
+            DavigoldAddinInstaller\Release\DavigoldAddinInstaller-${{ steps.gitversion.outputs.FullSemVer }}.msi
         env:
           SIGN_PFX_PATH: ${{ secrets.SIGN_PFX_PATH }}
           SIGN_PFX_PASSWORD: ${{ secrets.SIGN_PFX_PASSWORD }}
 
-      # 8. Upload MSI to your endpoint
+      # 7. Upload MSI to your endpoint
       - name: Upload MSI to localhost API
         shell: cmd
         run: |
           curl.exe -X POST ^
-            -F "file=@Setup-${{ steps.gitversion.outputs.FullSemVer }}.msi" ^
+            -F "file=@DavigoldAddinInstaller\Release\DavigoldAddinInstaller-${{ steps.gitversion.outputs.FullSemVer }}.msi" ^
             -F "version=${{ steps.gitversion.outputs.FullSemVer }}" ^
             https://localhost:7106/api/plugin-version
