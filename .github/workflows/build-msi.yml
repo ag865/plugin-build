@@ -11,6 +11,12 @@ jobs:
     runs-on: self-hosted  # your local Windows runner
 
     steps:
+      # 0. Set PowerShell execution policy
+      - name: Set PowerShell execution policy
+        shell: powershell
+        run: |
+          Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
+
       # 1. Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -29,6 +35,7 @@ jobs:
 
       # 3. Build VSTO Solution (MSBuild must exist on runner)
       - name: Build VSTO Add-in
+        shell: cmd
         run: |
           msbuild YourVstoSolution.sln ^
             /p:Configuration=Release ^
@@ -37,6 +44,7 @@ jobs:
 
       # 4. Build MSI (WiX must exist on runner)
       - name: Build MSI using WiX
+        shell: cmd
         run: |
           candle.exe installer.wxs -dVersion=${{ steps.gitversion.outputs.FullSemVer }}
           light.exe installer.wixobj -o Setup-${{ steps.gitversion.outputs.FullSemVer }}.msi
@@ -44,6 +52,7 @@ jobs:
       # 5. (Optional) Sign MSI
       - name: Sign MSI (optional)
         if: env.SIGN_PFX_PATH != '' && env.SIGN_PFX_PASSWORD != ''
+        shell: cmd
         run: |
           signtool sign ^
             /f "%SIGN_PFX_PATH%" ^
@@ -58,8 +67,9 @@ jobs:
 
       # 6. Upload MSI to your endpoint
       - name: Upload MSI to localhost API
+        shell: powershell
         run: |
-          curl -X POST `
+          curl.exe -X POST `
             -F "file=@Setup-${{ steps.gitversion.outputs.FullSemVer }}.msi" `
             -F "version=${{ steps.gitversion.outputs.FullSemVer }}" `
             https://localhost:7106/api/plugin-version
