@@ -14,6 +14,8 @@ jobs:
       # 1. Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history required for GitVersion
 
       # 2. Setup GitVersion
       - name: Install GitVersion
