@@ -32,22 +32,31 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      # 4. Build Solution (includes VSTO projects and MSI installer project)
-      - name: Build Solution and MSI
+      # 4. Build VSTO Projects (required dependencies for installer)
+      - name: Build VSTO Projects
         shell: cmd
         run: |
           msbuild DavigoldExcel.sln ^
             /p:Configuration=Release ^
             /p:Platform="Any CPU" ^
+            /t:DavigoldExcel;DavigoldPowerpoint;DavigoldWordAddin ^
             /verbosity:minimal
 
-      # 5. Rename MSI with version from GitVersion
+      # 5. Build MSI Installer Project
+      - name: Build MSI Installer
+        shell: cmd
+        run: |
+          msbuild DavigoldAddinInstaller\DavigoldAddinInstaller.vdproj ^
+            /p:Configuration=Release ^
+            /p:Platform="Any CPU" ^
+            /verbosity:minimal
+
+      # 6. Rename MSI with version from GitVersion
       - name: Rename MSI with version
         shell: cmd
         run: |
           set MSI_PATH=DavigoldAddinInstaller\Release\DavigoldAddinInstaller.msi
-          set VERSION=${{ steps.gitversion.outputs.FullSemVer }}
-          set NEW_MSI_PATH=DavigoldAddinInstaller\Release\DavigoldAddinInstaller-%VERSION%.msi
+          set NEW_MSI_PATH=DavigoldAddinInstaller\Release\DavigoldAddinInstaller-${{ steps.gitversion.outputs.FullSemVer }}.msi
           if exist "%MSI_PATH%" (
             copy "%MSI_PATH%" "%NEW_MSI_PATH%"
             echo MSI renamed to: %NEW_MSI_PATH%
@@ -56,7 +65,7 @@ jobs:
             exit /b 1
           )
 
-      # 6. (Optional) Sign MSI
+      # 7. (Optional) Sign MSI
       - name: Sign MSI (optional)
         if: env.SIGN_PFX_PATH != '' && env.SIGN_PFX_PASSWORD != ''
         shell: cmd
@@ -72,7 +81,7 @@ jobs:
           SIGN_PFX_PATH: ${{ secrets.SIGN_PFX_PATH }}
           SIGN_PFX_PASSWORD: ${{ secrets.SIGN_PFX_PASSWORD }}
 
-      # 7. Upload MSI to your endpoint
+      # 8. Upload MSI to your endpoint
       - name: Upload MSI to localhost API
         shell: cmd
         run: |
