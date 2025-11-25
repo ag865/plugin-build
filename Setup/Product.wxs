@@ -49,78 +49,74 @@
     <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
       <!-- Excel Addin Files -->
       <Component Id="DavigoldExcel.dll" Guid="{C82BFD97-349D-93AE-79C4-866AE9BE0F10}">
-        <File Source="$(var.DavigoldExcel.TargetDir)DavigoldExcel.dll" Id="DavigoldExcel.dll" KeyPath="yes" />
-        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="DavigoldExcel.dll" Type="integer" Value="1" KeyPath="no" />
+        <File Source="$(var.DavigoldExcel.TargetDir)DavigoldExcel.dll" Id="DavigoldExcel.dll" />
+        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="DavigoldExcel.dll" Type="integer" Value="1" KeyPath="yes" />
       </Component>
       <Component Id="DavigoldExcel.vsto" Guid="{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}">
-        <File Source="$(var.DavigoldExcel.TargetDir)DavigoldExcel.vsto" Id="DavigoldExcel.vsto" KeyPath="yes" />
-        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="DavigoldExcel.vsto" Type="integer" Value="1" KeyPath="no" />
+        <File Source="$(var.DavigoldExcel.TargetDir)DavigoldExcel.vsto" Id="DavigoldExcel.vsto" />
+        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="DavigoldExcel.vsto" Type="integer" Value="1" KeyPath="yes" />
       </Component>
       <Component Id="DavigoldExcel.dll.manifest" Guid="{D583870C-430A-4B4B-89A6-15A003C02C9E}">
-        <File Source="$(var.DavigoldExcel.TargetDir)DavigoldExcel.dll.manifest" Id="DavigoldExcel.dll.manifest" KeyPath="yes" />
-        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="DavigoldExcel.dll.manifest" Type="integer" Value="1" KeyPath="no" />
+        <File Source="$(var.DavigoldExcel.TargetDir)DavigoldExcel.dll.manifest" Id="DavigoldExcel.dll.manifest" />
+        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="DavigoldExcel.dll.manifest" Type="integer" Value="1" KeyPath="yes" />
       </Component>
 
       <!-- Word Addin Files -->
       <Component Id="DavigoldWordAddin.dll" Guid="{B60A4B38-47F0-4472-8EC5-5A743AE297D4}">
-        <File Source="$(var.DavigoldWordAddin.TargetDir)DavigoldWordAddin.dll" Id="DavigoldWordAddin.dll" KeyPath="yes" />
-        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="DavigoldWordAddin.dll" Type="integer" Value="1" KeyPath="no" />
+        <File Source="$(var.DavigoldWordAddin.TargetDir)DavigoldWordAddin.dll" Id="DavigoldWordAddin.dll" />
+        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="DavigoldWordAddin.dll" Type="integer" Value="1" KeyPath="yes" />
       </Component>
       <Component Id="DavigoldWordAddin.vsto" Guid="{476215BA-C531-4DA9-9032-6706C898A9C6}">
-        <File Source="$(var.DavigoldWordAddin.TargetDir)DavigoldWordAddin.vsto" Id="DavigoldWordAddin.vsto" KeyPath="yes" />
-        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="DavigoldWordAddin.vsto" Type="integer" Value="1" KeyPath="no" />
+        <File Source="$(var.DavigoldWordAddin.TargetDir)DavigoldWordAddin.vsto" Id="DavigoldWordAddin.vsto" />
+        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="DavigoldWordAddin.vsto" Type="integer" Value="1" KeyPath="yes" />
       </Component>
       <Component Id="DavigoldWordAddin.dll.manifest" Guid="{F5FB4D71-B807-4AA0-859B-F1DFAF3453CF}">
-        <File Source="$(var.DavigoldWordAddin.TargetDir)DavigoldWordAddin.dll.manifest" Id="DavigoldWordAddin.dll.manifest" KeyPath="yes" />
-        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="DavigoldWordAddin.dll.manifest" Type="integer" Value="1" KeyPath="no" />
+        <File Source="$(var.DavigoldWordAddin.TargetDir)DavigoldWordAddin.dll.manifest" Id="DavigoldWordAddin.dll.manifest" />
+        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="DavigoldWordAddin.dll.manifest" Type="integer" Value="1" KeyPath="yes" />
       </Component>
 
       <!-- PowerPoint Addin Files -->
       <Component Id="DavigoldPowerpointAddin.dll" Guid="{38EA619B-6A7A-42B2-BB84-3A9CA5520B70}">
-        <File Source="$(var.DavigoldPowerpoint.TargetDir)DavigoldPowerpointAddin.dll" Id="DavigoldPowerpointAddin.dll" KeyPath="yes" />
-        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="DavigoldPowerpointAddin.dll" Type="integer" Value="1" KeyPath="no" />
+        <File Source="$(var.DavigoldPowerpoint.TargetDir)DavigoldPowerpointAddin.dll" Id="DavigoldPowerpointAddin.dll" />
+        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="DavigoldPowerpointAddin.dll" Type="integer" Value="1" KeyPath="yes" />
       </Component>
       <Component Id="DavigoldPowerpointAddin.vsto" Guid="{3F079CF3-B482-43F5-9AD0-5FB49FBC70EF}">
-        <File Source="$(var.DavigoldPowerpoint.TargetDir)DavigoldPowerpointAddin.vsto" Id="DavigoldPowerpointAddin.vsto" KeyPath="yes" />
-        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="DavigoldPowerpointAddin.vsto" Type="integer" Value="1" KeyPath="no" />
+        <File Source="$(var.DavigoldPowerpoint.TargetDir)DavigoldPowerpointAddin.vsto" Id="DavigoldPowerpointAddin.vsto" />
+        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="DavigoldPowerpointAddin.vsto" Type="integer" Value="1" KeyPath="yes" />
       </Component>
       <Component Id="DavigoldPowerpointAddin.dll.manifest" Guid="{7F996602-1EBE-4BE6-A94D-83D3F468D310}">
-        <File Source="$(var.DavigoldPowerpoint.TargetDir)DavigoldPowerpointAddin.dll.manifest" Id="DavigoldPowerpointAddin.dll.manifest" KeyPath="yes" />
-        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="DavigoldPowerpointAddin.dll.manifest" Type="integer" Value="1" KeyPath="no" />
+        <File Source="$(var.DavigoldPowerpoint.TargetDir)DavigoldPowerpointAddin.dll.manifest" Id="DavigoldPowerpointAddin.dll.manifest" />
+        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="DavigoldPowerpointAddin.dll.manifest" Type="integer" Value="1" KeyPath="yes" />
       </Component>
 
       <!-- Dependencies -->
       <Component Id="Newtonsoft.Json.dll" Guid="{E077B1B9-146E-6103-BA6B-23546BB369AA}">
-        <File Source="$(var.DavigoldExcel.TargetDir)Newtonsoft.Json.dll" KeyPath="yes" />
-        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="Newtonsoft.Json.dll" Type="integer" Value="1" KeyPath="no" />
+        <File Source="$(var.DavigoldExcel.TargetDir)Newtonsoft.Json.dll" />
+        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="Newtonsoft.Json.dll" Type="integer" Value="1" KeyPath="yes" />
       </Component>
       <Component Id="Microsoft.Office.Tools.Common.v4.0.Utilities.dll" Guid="{8CCFE618-A4D8-670A-10BD-8EAA388D1D57}">
-        <File Source="$(var.DavigoldExcel.TargetDir)Microsoft.Office.Tools.Common.v4.0.Utilities.dll" KeyPath="yes" />
-        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="Microsoft.Office.Tools.Common.v4.0.Utilities.dll" Type="integer" Value="1" KeyPath="no" />
+        <File Source="$(var.DavigoldExcel.TargetDir)Microsoft.Office.Tools.Common.v4.0.Utilities.dll" />
+        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="Microsoft.Office.Tools.Common.v4.0.Utilities.dll" Type="integer" Value="1" KeyPath="yes" />
       </Component>
-      <!-- Add other dependencies if they are present in the output folder. 
-           Assuming VSTO runtime DLLs are CopyLocal=True or we trust them to be there. 
-           For a robust build, we often let VSTO runtime be handled by prerequisite, 
-           but the DLLs referenced in .vdproj suggest they are copied local. -->
       <Component Id="Microsoft.Office.Tools.Common.dll" Guid="{2C57C158-C5EC-581D-C0FB-BDF52C50F46A}">
-         <File Source="$(var.DavigoldExcel.TargetDir)Microsoft.Office.Tools.Common.dll" KeyPath="yes" />
-         <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="Microsoft.Office.Tools.Common.dll" Type="integer" Value="1" KeyPath="no" />
+         <File Source="$(var.DavigoldExcel.TargetDir)Microsoft.Office.Tools.Common.dll" />
+         <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="Microsoft.Office.Tools.Common.dll" Type="integer" Value="1" KeyPath="yes" />
       </Component>
        <Component Id="Microsoft.Office.Tools.Excel.dll" Guid="{7F75ED9C-F331-DF64-CE47-51D5736760C4}">
-         <File Source="$(var.DavigoldExcel.TargetDir)Microsoft.Office.Tools.Excel.dll" KeyPath="yes" />
-         <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="Microsoft.Office.Tools.Excel.dll" Type="integer" Value="1" KeyPath="no" />
+         <File Source="$(var.DavigoldExcel.TargetDir)Microsoft.Office.Tools.Excel.dll" />
+         <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="Microsoft.Office.Tools.Excel.dll" Type="integer" Value="1" KeyPath="yes" />
       </Component>
        <Component Id="Microsoft.Office.Tools.Word.dll" Guid="{5676105C-16D4-F374-CFE1-E11264F75767}">
-         <File Source="$(var.DavigoldWordAddin.TargetDir)Microsoft.Office.Tools.Word.dll" KeyPath="yes" />
-         <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="Microsoft.Office.Tools.Word.dll" Type="integer" Value="1" KeyPath="no" />
+         <File Source="$(var.DavigoldWordAddin.TargetDir)Microsoft.Office.Tools.Word.dll" />
+         <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="Microsoft.Office.Tools.Word.dll" Type="integer" Value="1" KeyPath="yes" />
       </Component>
        <Component Id="Microsoft.Office.Tools.v4.0.Framework.dll" Guid="{5812928D-3E86-3D2C-B891-72CCE041CF87}">
-         <File Source="$(var.DavigoldExcel.TargetDir)Microsoft.Office.Tools.v4.0.Framework.dll" KeyPath="yes" />
-         <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="Microsoft.Office.Tools.v4.0.Framework.dll" Type="integer" Value="1" KeyPath="no" />
+         <File Source="$(var.DavigoldExcel.TargetDir)Microsoft.Office.Tools.v4.0.Framework.dll" />
+         <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="Microsoft.Office.Tools.v4.0.Framework.dll" Type="integer" Value="1" KeyPath="yes" />
       </Component>
       <Component Id="Microsoft.VisualStudio.Tools.Applications.Runtime.dll" Guid="{DCAAF793-471B-DB1A-3F43-838178E68F4F}">
-         <File Source="$(var.DavigoldExcel.TargetDir)Microsoft.VisualStudio.Tools.Applications.Runtime.dll" KeyPath="yes" />
-         <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="Microsoft.VisualStudio.Tools.Applications.Runtime.dll" Type="integer" Value="1" KeyPath="no" />
+         <File Source="$(var.DavigoldExcel.TargetDir)Microsoft.VisualStudio.Tools.Applications.Runtime.dll" />
+         <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="Microsoft.VisualStudio.Tools.Applications.Runtime.dll" Type="integer" Value="1" KeyPath="yes" />
       </Component>
     </ComponentGroup>
 
