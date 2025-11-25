@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     name: Build MSI
-    runs-on: self-hosted
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository
@@ -56,11 +56,11 @@ jobs:
 
       # Note: The original script uploaded to localhost. This will likely fail in CI unless a tunnel is set up.
       # Uncomment and update the URL if you have a real deployment target.
-      - name: Upload MSI to API
-        shell: cmd
-        run: |
-          curl -X POST ^
-            -F "file=@Setup\bin\Release\DavigoldAddinInstaller-${{ steps.gitversion.outputs.FullSemVer }}.msi" ^
-            -F "version=${{ steps.gitversion.outputs.FullSemVer }}" ^
-            -k ^
-            https://localhost:7106/api/plugin-version
+      # - name: Upload MSI to API
+      #   shell: cmd
+      #   run: |
+      #     curl -X POST ^
+      #       -F "file=@Setup\bin\Release\DavigoldAddinInstaller-${{ steps.gitversion.outputs.FullSemVer }}.msi" ^
+      #       -F "version=${{ steps.gitversion.outputs.FullSemVer }}" ^
+      #       -k ^
+      #       https://localhost:7106/api/plugin-version
