@@ -11,11 +11,9 @@ jobs:
 
     steps:
 
-      # 1. Checkout code
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # 2. Download Visual Studio installer
+      # Download Visual Studio installer
       - name: Download Visual Studio installer
         shell: powershell
         run: |
@@ -23,53 +21,42 @@ jobs:
             -Uri "https://aka.ms/vs/17/release/vs_Enterprise.exe" `
             -OutFile "vs_installer.exe"
 
-      # 3. Install Visual Studio + Installer Projects (vdproj support)
-      # This enables devenv.com AND support for setup projects.
-      - name: Install Visual Studio (minimal components)
+      # Install VS + Installer Projects
+      - name: Install Visual Studio workloads
         shell: cmd
         run: |
           vs_installer.exe ^
-            --quiet --wait --norestart ^
+            --productId Microsoft.VisualStudio.Product.Enterprise ^
+            --quiet --wait --norestart --nocache ^
             --add Microsoft.VisualStudio.Workload.ManagedDesktop ^
             --add Microsoft.VisualStudio.Component.VSSDK ^
             --add Microsoft.VisualStudio.Component.VSInstallerProjects ^
             --includeRecommended
 
-      # 4. Locate devenv.com
-      - name: Locate devenv.com
+      # Locate devenv
+      - name: Locate devenv
         id: finddevenv
         shell: powershell
         run: |
-          $devenv = Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio" -Recurse -Filter devenv.com -ErrorAction SilentlyContinue | Select-Object -First 1
-          if (-not $devenv) {
-              Write-Error "ERROR: Could not find devenv.com after installing Visual Studio."
-              exit 1
-          }
-          echo "::set-output name=path::$($devenv.FullName)"
+          $path = Get-ChildItem -Filter devenv.com -Recurse "C:\Program Files\Microsoft Visual Studio" | 
+                  Select-Object -First 1 -ExpandProperty FullName
+          if (-not $path) { throw "devenv.com not found" }
+          echo "::set-output name=path::$path"
 
-      # 5. Build the MSI installer using Visual Studio
-      - name: Build VSTO + MSI Installer
+      # Build the MSI
+      - name: Build MSI
         shell: cmd
         run: |
           "%{{ steps.finddevenv.outputs.path }}" DavigoldExcel.sln /build Release
 
-      # 6. Rename MSI nicely
-      - name: Package MSI
+      # Rename output
+      - name: Move MSI
         shell: cmd
         run: |
-          set SRC=DavigoldAddinInstaller\Release\DavigoldAddinInstaller.msi
-          set DST=DavigoldAddinInstaller\Release\DavigoldAddinInstaller-latest.msi
+          copy DavigoldAddinInstaller\Release\DavigoldAddinInstaller.msi DavigoldAddinInstaller\Release\DavigoldAddinInstaller-latest.msi
 
-          if not exist "%SRC%" (
-            echo ERROR: MSI not found. The installer project probably failed to build.
-            exit /b 1
-          )
-
-          copy "%SRC%" "%DST%"
-          echo Packaged MSI as: %DST%
-
-      # 7. Upload MSI to your API endpoint
-      - name: Upload MSI to your API
+      # Upload MSI to API
+      - name: Upload MSI
         shell: cmd
         run: |
           curl.exe -X POST ^
