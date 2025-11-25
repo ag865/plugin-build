@@ -37,6 +37,7 @@
       <DoNotHarvest>True</DoNotHarvest>
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
       <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+      <Properties>Configuration=Release;Platform=AnyCPU</Properties>
     </ProjectReference>
     <ProjectReference Include="..\DavigoldWordAddin\DavigoldWordAddin.csproj">
       <Name>DavigoldWordAddin</Name>
@@ -45,6 +46,7 @@
       <DoNotHarvest>True</DoNotHarvest>
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
       <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+      <Properties>Configuration=Release;Platform=AnyCPU</Properties>
     </ProjectReference>
     <ProjectReference Include="..\DavigoldPowerpointAddin\DavigoldPowerpoint.csproj">
       <Name>DavigoldPowerpoint</Name>
@@ -53,6 +55,7 @@
       <DoNotHarvest>True</DoNotHarvest>
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
       <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+      <Properties>Configuration=Release;Platform=AnyCPU</Properties>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
