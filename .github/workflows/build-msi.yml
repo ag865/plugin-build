@@ -37,10 +37,18 @@ jobs:
         shell: powershell
         run: |
           Write-Host "Downloading VS Installer Projects extension..."
-          # URL for VS 2022 extension
-          $vsixUrl = "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/Microsoft/vsextensions/InstallerProjects2022/latest/vspackage"
+          # Correct URL for VS 2022 extension (ItemName: Microsoft.VisualStudioInstallerProjects2022)
+          # Publisher: Microsoft, Extension: VisualStudioInstallerProjects2022
+          $vsixUrl = "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/Microsoft/vsextensions/VisualStudioInstallerProjects2022/latest/vspackage"
           $vsixPath = "$env:TEMP\InstallerProjects.vsix"
-          Invoke-WebRequest -Uri $vsixUrl -OutFile $vsixPath
+          
+          try {
+            Invoke-WebRequest -Uri $vsixUrl -OutFile $vsixPath -ErrorAction Stop
+            Write-Host "Download successful."
+          } catch {
+            Write-Error "Failed to download extension: $_"
+            exit 1
+          }
           
           Write-Host "Locating VSIXInstaller.exe..."
           $vsixInstaller = Get-ChildItem -Path "C:\Program Files (x86)\Microsoft Visual Studio\Installer" -Filter "VSIXInstaller.exe" -Recurse | Select-Object -First 1 -ExpandProperty FullName
@@ -52,8 +60,14 @@ jobs:
           
           Write-Host "Installing extension..."
           # Install for VS 2022 Enterprise (skuName:Enterprise, skuVersion:17.0)
-          Start-Process -FilePath $vsixInstaller -ArgumentList "/quiet", "/admin", "/skuName:Enterprise", "/skuVersion:17.0", """$vsixPath""" -Wait -NoNewWindow
-          Write-Host "Extension installed."
+          $args = @("/quiet", "/admin", "/skuName:Enterprise", "/skuVersion:17.0", """$vsixPath""")
+          $process = Start-Process -FilePath $vsixInstaller -ArgumentList $args -Wait -NoNewWindow -PassThru
+          
+          if ($process.ExitCode -ne 0) {
+             Write-Warning "VSIXInstaller exited with code $($process.ExitCode). This might indicate success with warnings or failure."
+          } else {
+             Write-Host "Extension installed successfully."
+          }
 
       # 5. Enable Out-of-Process Builds for .vdproj
       # Required for command-line builds of installer projects.
