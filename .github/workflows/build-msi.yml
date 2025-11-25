@@ -1,4 +1,4 @@
-name: Build VSTO MSI
+name: Build MSI Installer
 
 on:
   push:
@@ -11,13 +11,11 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # 1. Checkout code with full history for GitVersion
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 2. Setup GitVersion to calculate version
       - name: Install GitVersion
         uses: gittools/actions/gitversion/setup@v1
         with:
@@ -26,123 +24,42 @@ jobs:
       - name: Determine Version
         id: gitversion
         uses: gittools/actions/gitversion/execute@v1
+        with:
+          updateAssemblyInfo: true
+          # This helps ensure the DLLs have the correct version for WiX to read
 
-      # 3. Setup MSBuild for VSTO projects
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      # 4. Install Visual Studio Installer Projects Extension
-      # This extension is required to build .vdproj files and is not installed by default on windows-latest.
-      - name: Install VS Installer Projects Extension
-        shell: powershell
-        run: |
-          Write-Host "Downloading VS Installer Projects extension..."
-          # Correct URL for VS 2022 extension (ItemName: Microsoft.VisualStudioInstallerProjects2022)
-          # Publisher: Microsoft, Extension: VisualStudioInstallerProjects2022
-          $vsixUrl = "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/Microsoft/vsextensions/VisualStudioInstallerProjects2022/latest/vspackage"
-          $vsixPath = "$env:TEMP\InstallerProjects.vsix"
-          
-          try {
-            Invoke-WebRequest -Uri $vsixUrl -OutFile $vsixPath -ErrorAction Stop
-            Write-Host "Download successful."
-          } catch {
-            Write-Error "Failed to download extension: $_"
-            exit 1
-          }
-          
-          Write-Host "Locating VSIXInstaller.exe..."
-          $vsixInstaller = Get-ChildItem -Path "C:\Program Files (x86)\Microsoft Visual Studio\Installer" -Filter "VSIXInstaller.exe" -Recurse | Select-Object -First 1 -ExpandProperty FullName
-          if (-not $vsixInstaller) {
-            Write-Error "VSIXInstaller.exe not found."
-            exit 1
-          }
-          Write-Host "Found VSIXInstaller at: $vsixInstaller"
-          
-          Write-Host "Installing extension..."
-          # Install for VS 2022 Enterprise (skuName:Enterprise, skuVersion:17.0)
-          $args = @("/quiet", "/admin", "/skuName:Enterprise", "/skuVersion:17.0", """$vsixPath""")
-          $process = Start-Process -FilePath $vsixInstaller -ArgumentList $args -Wait -NoNewWindow -PassThru
-          
-          if ($process.ExitCode -ne 0) {
-             Write-Warning "VSIXInstaller exited with code $($process.ExitCode). This might indicate success with warnings or failure."
-          } else {
-             Write-Host "Extension installed successfully."
-          }
+      - name: Restore NuGet Packages
+        run: nuget restore DavigoldExcel.sln
 
-      # 5. Enable Out-of-Process Builds for .vdproj
-      # Required for command-line builds of installer projects.
-      - name: Enable Out-of-Process Builds
+      - name: Build VSTO Add-ins
+        run: |
+          msbuild DavigoldExcel.sln /p:Configuration=Release /p:Platform="Any CPU" /t:DavigoldExcel;DavigoldPowerpoint;DavigoldWordAddin /verbosity:minimal
+
+      - name: Build WiX Installer
+        run: |
+          msbuild Setup/Setup.wixproj /p:Configuration=Release /p:Platform=x86 /verbosity:minimal
+
+      - name: Rename MSI
         shell: cmd
         run: |
-          set REG_FIX="C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\CommonExtensions\Microsoft\VSI\DisableOutOfProcBuild\DisableOutOfProcBuild.exe"
-          if exist %REG_FIX% (
-             echo Running DisableOutOfProcBuild.exe...
-             %REG_FIX%
-          ) else (
-             echo Warning: DisableOutOfProcBuild.exe not found. Build might fail if this is required.
-          )
+          move Setup\bin\Release\DavigoldAddinInstaller.msi Setup\bin\Release\DavigoldAddinInstaller-${{ steps.gitversion.outputs.FullSemVer }}.msi
 
-      # 6. Build VSTO Projects first (dependencies)
-      - name: Build VSTO Projects
-        shell: cmd
-        run: |
-          msbuild DavigoldExcel.sln ^
-            /p:Configuration=Release ^
-            /p:Platform="Any CPU" ^
-            /t:DavigoldExcel;DavigoldPowerpoint;DavigoldWordAddin ^
-            /verbosity:minimal
+      - name: Upload MSI Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DavigoldAddinInstaller
+          path: Setup/bin/Release/DavigoldAddinInstaller-${{ steps.gitversion.outputs.FullSemVer }}.msi
 
-      # 7. Build MSI Installer Project using devenv.com
-      # MSBuild cannot build .vdproj directly; must use devenv.com
-      - name: Build MSI Installer
-        shell: cmd
-        run: |
-          set DEVENV="C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com"
-          if not exist %DEVENV% (
-            echo Error: devenv.com not found at expected path.
-            exit /b 1
-          )
-          
-          echo Building Installer Project...
-          %DEVENV% DavigoldExcel.sln /Build Release /Project DavigoldAddinInstaller\DavigoldAddinInstaller.vdproj
-
-      # 8. Rename and Move MSI
-      - name: Rename and Move MSI
-        shell: cmd
-        run: |
-          set MSI_SRC=DavigoldAddinInstaller\Release\DavigoldAddinInstaller.msi
-          set MSI_DEST=DavigoldAddinInstaller\Release\DavigoldAddinInstaller-${{ steps.gitversion.outputs.FullSemVer }}.msi
-          
-          if exist "%MSI_SRC%" (
-            copy "%MSI_SRC%" "%MSI_DEST%"
-            echo MSI created: %MSI_DEST%
-          ) else (
-            echo Error: MSI not found at %MSI_SRC%
-            exit /b 1
-          )
-
-      # 9. (Optional) Sign MSI
-      - name: Sign MSI (optional)
-        if: env.SIGN_PFX_PATH != '' && env.SIGN_PFX_PASSWORD != ''
-        shell: cmd
-        run: |
-          signtool sign ^
-            /f "%SIGN_PFX_PATH%" ^
-            /p "%SIGN_PFX_PASSWORD%" ^
-            /tr http://timestamp.sectigo.com ^
-            /td sha256 ^
-            /fd sha256 ^
-            "DavigoldAddinInstaller\Release\DavigoldAddinInstaller-${{ steps.gitversion.outputs.FullSemVer }}.msi"
-        env:
-          SIGN_PFX_PATH: ${{ secrets.SIGN_PFX_PATH }}
-          SIGN_PFX_PASSWORD: ${{ secrets.SIGN_PFX_PASSWORD }}
-
-      # 10. Upload MSI
-      - name: Upload MSI to API
-        shell: cmd
-        run: |
-          curl -X POST ^
-            -F "file=@DavigoldAddinInstaller\Release\DavigoldAddinInstaller-${{ steps.gitversion.outputs.FullSemVer }}.msi" ^
-            -F "version=${{ steps.gitversion.outputs.FullSemVer }}" ^
-            -k ^
-            https://localhost:7106/api/plugin-version
+      # Note: The original script uploaded to localhost. This will likely fail in CI unless a tunnel is set up.
+      # Uncomment and update the URL if you have a real deployment target.
+      # - name: Upload MSI to API
+      #   shell: cmd
+      #   run: |
+      #     curl -X POST ^
+      #       -F "file=@Setup\bin\Release\DavigoldAddinInstaller-${{ steps.gitversion.outputs.FullSemVer }}.msi" ^
+      #       -F "version=${{ steps.gitversion.outputs.FullSemVer }}" ^
+      #       -k ^
+      #       https://your-api-url.com/api/plugin-version

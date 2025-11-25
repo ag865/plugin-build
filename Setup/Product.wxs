@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="Davigold One Office Plugin" Language="1033" Version="!(bind.fileVersion.DavigoldExcel.dll)" Manufacturer="Davigold" UpgradeCode="{3D6914F0-D605-4FC9-85A8-38A692A8ABCC}">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perUser" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <PropertyRef Id="WIX_IS_NETFRAMEWORK_472_OR_LATER_INSTALLED" />
+    <Condition Message="This application requires .NET Framework 4.7.2. Please install the .NET Framework then run this installer again.">
+      <![CDATA[Installed OR WIX_IS_NETFRAMEWORK_472_OR_LATER_INSTALLED]]>
+    </Condition>
+
+    <Property Id="VSTORUNTIME">
+      <RegistrySearch Id="VSTORuntimeSearch" Root="HKLM" Key="SOFTWARE\Microsoft\VSTO Runtime Setup\v4R" Name="Version" Type="raw" />
+    </Property>
+    <Condition Message="The Visual Studio 2010 Tools for Office Runtime is not installed. Please install it to continue.">
+      <![CDATA[Installed OR VSTORUNTIME]]>
+    </Condition>
+
+    <Feature Id="ProductFeature" Title="Davigold Office Plugins" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentGroupRef Id="RegistryComponents" />
+    </Feature>
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="AppDataFolder">
+        <Directory Id="Davigold" Name="Davigold">
+          <Directory Id="INSTALLFOLDER" Name="OneOfficePlugin" />
+        </Directory>
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <!-- Excel Addin Files -->
+      <Component Id="DavigoldExcel.dll" Guid="{C82BFD97-349D-93AE-79C4-866AE9BE0F10}">
+        <File Source="$(var.DavigoldExcel.TargetDir)DavigoldExcel.dll" Id="DavigoldExcel.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="DavigoldExcel.vsto" Guid="{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}">
+        <File Source="$(var.DavigoldExcel.TargetDir)DavigoldExcel.vsto" Id="DavigoldExcel.vsto" KeyPath="yes" />
+      </Component>
+      <Component Id="DavigoldExcel.dll.manifest" Guid="{D583870C-430A-4B4B-89A6-15A003C02C9E}">
+        <File Source="$(var.DavigoldExcel.TargetDir)DavigoldExcel.dll.manifest" Id="DavigoldExcel.dll.manifest" KeyPath="yes" />
+      </Component>
+
+      <!-- Word Addin Files -->
+      <Component Id="DavigoldWordAddin.dll" Guid="{B60A4B38-47F0-4472-8EC5-5A743AE297D4}">
+        <File Source="$(var.DavigoldWordAddin.TargetDir)DavigoldWordAddin.dll" Id="DavigoldWordAddin.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="DavigoldWordAddin.vsto" Guid="{476215BA-C531-4DA9-9032-6706C898A9C6}">
+        <File Source="$(var.DavigoldWordAddin.TargetDir)DavigoldWordAddin.vsto" Id="DavigoldWordAddin.vsto" KeyPath="yes" />
+      </Component>
+      <Component Id="DavigoldWordAddin.dll.manifest" Guid="{F5FB4D71-B807-4AA0-859B-F1DFAF3453CF}">
+        <File Source="$(var.DavigoldWordAddin.TargetDir)DavigoldWordAddin.dll.manifest" Id="DavigoldWordAddin.dll.manifest" KeyPath="yes" />
+      </Component>
+
+      <!-- PowerPoint Addin Files -->
+      <Component Id="DavigoldPowerpointAddin.dll" Guid="{38EA619B-6A7A-42B2-BB84-3A9CA5520B70}">
+        <File Source="$(var.DavigoldPowerpoint.TargetDir)DavigoldPowerpointAddin.dll" Id="DavigoldPowerpointAddin.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="DavigoldPowerpointAddin.vsto" Guid="{3F079CF3-B482-43F5-9AD0-5FB49FBC70EF}">
+        <File Source="$(var.DavigoldPowerpoint.TargetDir)DavigoldPowerpointAddin.vsto" Id="DavigoldPowerpointAddin.vsto" KeyPath="yes" />
+      </Component>
+      <Component Id="DavigoldPowerpointAddin.dll.manifest" Guid="{7F996602-1EBE-4BE6-A94D-83D3F468D310}">
+        <File Source="$(var.DavigoldPowerpoint.TargetDir)DavigoldPowerpointAddin.dll.manifest" Id="DavigoldPowerpointAddin.dll.manifest" KeyPath="yes" />
+      </Component>
+
+      <!-- Dependencies -->
+      <Component Id="Newtonsoft.Json.dll" Guid="{E077B1B9-146E-6103-BA6B-23546BB369AA}">
+        <File Source="$(var.DavigoldExcel.TargetDir)Newtonsoft.Json.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Microsoft.Office.Tools.Common.v4.0.Utilities.dll" Guid="{8CCFE618-A4D8-670A-10BD-8EAA388D1D57}">
+        <File Source="$(var.DavigoldExcel.TargetDir)Microsoft.Office.Tools.Common.v4.0.Utilities.dll" KeyPath="yes" />
+      </Component>
+      <!-- Add other dependencies if they are present in the output folder. 
+           Assuming VSTO runtime DLLs are CopyLocal=True or we trust them to be there. 
+           For a robust build, we often let VSTO runtime be handled by prerequisite, 
+           but the DLLs referenced in .vdproj suggest they are copied local. -->
+      <Component Id="Microsoft.Office.Tools.Common.dll" Guid="{2C57C158-C5EC-581D-C0FB-BDF52C50F46A}">
+         <File Source="$(var.DavigoldExcel.TargetDir)Microsoft.Office.Tools.Common.dll" KeyPath="yes" />
+      </Component>
+       <Component Id="Microsoft.Office.Tools.Excel.dll" Guid="{7F75ED9C-F331-DF64-CE47-51D5736760C4}">
+         <File Source="$(var.DavigoldExcel.TargetDir)Microsoft.Office.Tools.Excel.dll" KeyPath="yes" />
+      </Component>
+       <Component Id="Microsoft.Office.Tools.Word.dll" Guid="{5676105C-16D4-F374-CFE1-E11264F75767}">
+         <File Source="$(var.DavigoldWordAddin.TargetDir)Microsoft.Office.Tools.Word.dll" KeyPath="yes" />
+      </Component>
+       <Component Id="Microsoft.Office.Tools.v4.0.Framework.dll" Guid="{5812928D-3E86-3D2C-B891-72CCE041CF87}">
+         <File Source="$(var.DavigoldExcel.TargetDir)Microsoft.Office.Tools.v4.0.Framework.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Microsoft.VisualStudio.Tools.Applications.Runtime.dll" Guid="{DCAAF793-471B-DB1A-3F43-838178E68F4F}">
+         <File Source="$(var.DavigoldExcel.TargetDir)Microsoft.VisualStudio.Tools.Applications.Runtime.dll" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="RegistryComponents" Directory="INSTALLFOLDER">
+      <!-- Excel Registry -->
+      <Component Id="Reg_Excel" Guid="{E58AD0E2-9D0E-4B77-B680-40A88DFE8FC6}">
+        <RegistryKey Root="HKCU" Key="Software\Microsoft\Office\Excel\Addins\Davigold.ExcelAddin">
+          <RegistryValue Name="Description" Value="Davigold Excel Addin" Type="string" />
+          <RegistryValue Name="FriendlyName" Value="Davigold Excel Addin" Type="string" />
+          <RegistryValue Name="LoadBehavior" Value="3" Type="integer" />
+          <RegistryValue Name="Manifest" Value="file:///[INSTALLFOLDER]DavigoldExcel.vsto|vstolocal" Type="string" />
+        </RegistryKey>
+        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="ExcelRegistered" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+
+      <!-- Word Registry -->
+      <Component Id="Reg_Word" Guid="{0CAA7A19-6B81-46D7-A701-6E5508C9738C}">
+        <RegistryKey Root="HKCU" Key="Software\Microsoft\Office\Word\Addins\Davigold.WordAddin">
+          <RegistryValue Name="Description" Value="DAVIGOLD Word Addin" Type="string" />
+          <RegistryValue Name="FriendlyName" Value="DAVIGOLD Word Addin" Type="string" />
+          <RegistryValue Name="LoadBehavior" Value="3" Type="integer" />
+          <RegistryValue Name="Manifest" Value="file:///[INSTALLFOLDER]DavigoldWordAddin.vsto|vstolocal" Type="string" />
+        </RegistryKey>
+        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="WordRegistered" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+
+      <!-- PowerPoint Registry -->
+      <Component Id="Reg_PPT" Guid="{E6CB880D-BF6C-4D20-B07C-11078B263CBC}">
+        <RegistryKey Root="HKCU" Key="Software\Microsoft\Office\Powerpoint\Addins\Davigold.PowerpointAddin">
+          <RegistryValue Name="Description" Value="DAVIGOLD Powerpoint Addin" Type="string" />
+          <RegistryValue Name="FriendlyName" Value="DAVIGOLD Powerpoint Addin" Type="string" />
+          <RegistryValue Name="LoadBehavior" Value="3" Type="integer" />
+          <RegistryValue Name="Manifest" Value="file:///[INSTALLFOLDER]DavigoldPowerpointAddin.vsto|vstolocal" Type="string" />
+        </RegistryKey>
+        <RegistryValue Root="HKCU" Key="Software\Davigold\OneOfficePlugin" Name="PPTRegistered" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
