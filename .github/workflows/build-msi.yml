@@ -1,4 +1,5 @@
 name: Build VSTO MSI
+
 on:
   push:
     branches: [ main ]
@@ -10,19 +11,21 @@ jobs:
 
     steps:
 
-      - name: Checkout
+      # 1. Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 1. Download Visual Studio Installer
-      - name: Download Visual Studio Installer
+      # 2. Download Visual Studio installer
+      - name: Download Visual Studio installer
         shell: powershell
         run: |
           Invoke-WebRequest `
             -Uri "https://aka.ms/vs/17/release/vs_Enterprise.exe" `
             -OutFile "vs_installer.exe"
 
-      # 2. Install Visual Studio with the "Installer Projects" workload
-      - name: Install Visual Studio (minimal + vdproj support)
+      # 3. Install Visual Studio + Installer Projects (vdproj support)
+      # This enables devenv.com AND support for setup projects.
+      - name: Install Visual Studio (minimal components)
         shell: cmd
         run: |
           vs_installer.exe ^
@@ -32,25 +35,44 @@ jobs:
             --add Microsoft.VisualStudio.Component.VSInstallerProjects ^
             --includeRecommended
 
-      # 3. Locate devenv after installation
+      # 4. Locate devenv.com
       - name: Locate devenv.com
         id: finddevenv
         shell: powershell
         run: |
-          $path = Get-ChildItem -Recurse "C:\Program Files" -Filter devenv.com -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-          if (-not $path) { Write-Error "devenv.com not found"; exit 1 }
-          echo "::set-output name=devenv::$path"
+          $devenv = Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio" -Recurse -Filter devenv.com -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $devenv) {
+              Write-Error "ERROR: Could not find devenv.com after installing Visual Studio."
+              exit 1
+          }
+          echo "::set-output name=path::$($devenv.FullName)"
 
-      # 4. Build MSI
-      - name: Build Solution
+      # 5. Build the MSI installer using Visual Studio
+      - name: Build VSTO + MSI Installer
         shell: cmd
         run: |
-          "%{{ steps.finddevenv.outputs.devenv }}" DavigoldExcel.sln /build Release
+          "%{{ steps.finddevenv.outputs.path }}" DavigoldExcel.sln /build Release
 
-      # 5. Rename MSI with GitVersion or your own version
-      - name: Rename MSI
+      # 6. Rename MSI nicely
+      - name: Package MSI
         shell: cmd
         run: |
           set SRC=DavigoldAddinInstaller\Release\DavigoldAddinInstaller.msi
           set DST=DavigoldAddinInstaller\Release\DavigoldAddinInstaller-latest.msi
+
+          if not exist "%SRC%" (
+            echo ERROR: MSI not found. The installer project probably failed to build.
+            exit /b 1
+          )
+
           copy "%SRC%" "%DST%"
+          echo Packaged MSI as: %DST%
+
+      # 7. Upload MSI to your API endpoint
+      - name: Upload MSI to your API
+        shell: cmd
+        run: |
+          curl.exe -X POST ^
+            -F "file=@DavigoldAddinInstaller\Release\DavigoldAddinInstaller-latest.msi" ^
+            -F "version=latest" ^
+            https://localhost:7106/api/plugin-version
