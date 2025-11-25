@@ -7,68 +7,63 @@ on:
 
 jobs:
   build:
-    name: Build MSI on Windows Runner
+    name: Build MSI Installer
     runs-on: windows-latest
 
     steps:
 
-      # 1. Checkout code
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      # 1. Checkout
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history required for GitVersion
+          fetch-depth: 0
 
-      # 2. Setup GitVersion
-      - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v1
+      # 2. GitVersion
+      - uses: gittools/actions/gitversion/setup@v1
         with:
           versionSpec: '5.x'
 
-      - name: Determine Version
-        id: gitversion
+      - id: gitversion
         uses: gittools/actions/gitversion/execute@v1
 
-      # 3. Setup MSBuild (available on windows-latest but needs to be added to PATH)
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
+      # 3. Install Microsoft Visual Studio Installer Projects (vdproj support)
+      - name: Install VS Installer Projects Extension
+        shell: powershell
+        run: |
+          $vsix = "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/Microsoft/vsextensions/VisualStudioInstallerProjects/2022/vsix"
+          & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\VSIXInstaller.exe" `
+            /quiet /logFile:vsix-install.log $vsix
 
-      # 4. Build Solution using Visual Studio (handles .vdproj files)
-      - name: Build Solution with MSI Installer
+      # 4. Build the solution using devenv.com
+      - name: Build Solution (including vdproj)
         shell: cmd
         run: |
-          REM Find Visual Studio devenv.com
-          for /f "delims=" %%i in ('dir /s /b "C:\Program Files\Microsoft Visual Studio\2022\*\Common7\IDE\devenv.com" 2^>nul') do set DEVENV=%%i
+          for /f "delims=" %%i in ('dir /s /b "C:\Program Files\Microsoft Visual Studio\2022\*\Common7\IDE\devenv.com"') do set DEVENV=%%i
           if not defined DEVENV (
-            for /f "delims=" %%i in ('dir /s /b "C:\Program Files (x86)\Microsoft Visual Studio\2019\*\Common7\IDE\devenv.com" 2^>nul') do set DEVENV=%%i
-          )
-          if not defined DEVENV (
-            echo Error: Visual Studio devenv.com not found. Trying MSBuild approach...
-            msbuild DavigoldExcel.sln ^
-              /p:Configuration=Release ^
-              /p:Platform="Any CPU" ^
-              /t:DavigoldExcel;DavigoldPowerpoint;DavigoldWordAddin ^
-              /verbosity:minimal
+            echo ERROR: devenv.com not found.
             exit /b 1
           )
-          echo Using: %DEVENV%
-          "%DEVENV%" DavigoldExcel.sln /build Release
+          echo Found devenv at: %DEVENV%
 
-      # 7. Rename MSI with version from GitVersion
-      - name: Rename MSI with version
+          "%DEVENV%" YourSolution.sln /build Release /project DavigoldAddinInstaller
+
+      # 5. Rename MSI with version
+      - name: Rename MSI
         shell: cmd
         run: |
-          set MSI_PATH=DavigoldAddinInstaller\Release\DavigoldAddinInstaller.msi
-          set NEW_MSI_PATH=DavigoldAddinInstaller\Release\DavigoldAddinInstaller-${{ steps.gitversion.outputs.FullSemVer }}.msi
-          if exist "%MSI_PATH%" (
-            copy "%MSI_PATH%" "%NEW_MSI_PATH%"
-            echo MSI renamed to: %NEW_MSI_PATH%
-          ) else (
-            echo Error: MSI file not found at: %MSI_PATH%
+          set "SRC=DavigoldAddinInstaller\Release\DavigoldAddinInstaller.msi"
+          set "DST=DavigoldAddinInstaller\Release\DavigoldAddinInstaller-${{ steps.gitversion.outputs.FullSemVer }}.msi"
+
+          if not exist "%SRC%" (
+            echo ERROR: MSI not found: %SRC%
+            echo The installer project probably did not build.
             exit /b 1
           )
 
-      # 8. (Optional) Sign MSI
-      - name: Sign MSI (optional)
+          copy "%SRC%" "%DST%"
+          echo Created versioned MSI: %DST%
+
+      # 6. Optional signing
+      - name: Sign MSI
         if: env.SIGN_PFX_PATH != '' && env.SIGN_PFX_PASSWORD != ''
         shell: cmd
         run: |
@@ -78,13 +73,13 @@ jobs:
             /tr http://timestamp.sectigo.com ^
             /td sha256 ^
             /fd sha256 ^
-            DavigoldAddinInstaller\Release\DavigoldAddinInstaller-${{ steps.gitversion.outputs.FullSemVer }}.msi
+            "DavigoldAddinInstaller\Release\DavigoldAddinInstaller-${{ steps.gitversion.outputs.FullSemVer }}.msi"
         env:
           SIGN_PFX_PATH: ${{ secrets.SIGN_PFX_PATH }}
           SIGN_PFX_PASSWORD: ${{ secrets.SIGN_PFX_PASSWORD }}
 
-      # 9. Upload MSI to your endpoint
-      - name: Upload MSI to localhost API
+      # 7. Upload to your API
+      - name: Upload MSI to API
         shell: cmd
         run: |
           curl.exe -X POST ^
