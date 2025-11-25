@@ -32,26 +32,28 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      # 4. Build VSTO Projects (required dependencies for installer)
-      - name: Build VSTO Projects
+      # 4. Build Solution using Visual Studio (handles .vdproj files)
+      - name: Build Solution with MSI Installer
         shell: cmd
         run: |
-          msbuild DavigoldExcel.sln ^
-            /p:Configuration=Release ^
-            /p:Platform="Any CPU" ^
-            /t:DavigoldExcel;DavigoldPowerpoint;DavigoldWordAddin ^
-            /verbosity:minimal
+          REM Find Visual Studio devenv.com
+          for /f "delims=" %%i in ('dir /s /b "C:\Program Files\Microsoft Visual Studio\2022\*\Common7\IDE\devenv.com" 2^>nul') do set DEVENV=%%i
+          if not defined DEVENV (
+            for /f "delims=" %%i in ('dir /s /b "C:\Program Files (x86)\Microsoft Visual Studio\2019\*\Common7\IDE\devenv.com" 2^>nul') do set DEVENV=%%i
+          )
+          if not defined DEVENV (
+            echo Error: Visual Studio devenv.com not found. Trying MSBuild approach...
+            msbuild DavigoldExcel.sln ^
+              /p:Configuration=Release ^
+              /p:Platform="Any CPU" ^
+              /t:DavigoldExcel;DavigoldPowerpoint;DavigoldWordAddin ^
+              /verbosity:minimal
+            exit /b 1
+          )
+          echo Using: %DEVENV%
+          "%DEVENV%" DavigoldExcel.sln /build Release
 
-      # 5. Build MSI Installer Project
-      - name: Build MSI Installer
-        shell: cmd
-        run: |
-          msbuild DavigoldAddinInstaller\DavigoldAddinInstaller.vdproj ^
-            /p:Configuration=Release ^
-            /p:Platform="Any CPU" ^
-            /verbosity:minimal
-
-      # 6. Rename MSI with version from GitVersion
+      # 7. Rename MSI with version from GitVersion
       - name: Rename MSI with version
         shell: cmd
         run: |
@@ -65,7 +67,7 @@ jobs:
             exit /b 1
           )
 
-      # 7. (Optional) Sign MSI
+      # 8. (Optional) Sign MSI
       - name: Sign MSI (optional)
         if: env.SIGN_PFX_PATH != '' && env.SIGN_PFX_PASSWORD != ''
         shell: cmd
@@ -81,7 +83,7 @@ jobs:
           SIGN_PFX_PATH: ${{ secrets.SIGN_PFX_PATH }}
           SIGN_PFX_PASSWORD: ${{ secrets.SIGN_PFX_PASSWORD }}
 
-      # 8. Upload MSI to your endpoint
+      # 9. Upload MSI to your endpoint
       - name: Upload MSI to localhost API
         shell: cmd
         run: |
