@@ -35,6 +35,7 @@ jobs:
         run: nuget restore DavigoldExcel.sln
 
       - name: Build VSTO Add-ins
+        shell: cmd
         run: |
           msbuild DavigoldExcel.sln /p:Configuration=Release /p:Platform="Any CPU" /t:DavigoldExcel;DavigoldPowerpoint;DavigoldWordAddin /verbosity:minimal
 
